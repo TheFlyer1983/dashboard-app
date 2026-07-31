@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import type { ApexOptions } from 'apexcharts'
 import { storeToRefs } from 'pinia'
 import { useDisplay } from 'vuetify'
 import VueApexCharts from 'vue3-apexcharts'
 
 import { useAnalyticsStore } from '@/stores/analytics'
-import type { DashboardFilters, OperationalRecord, TrendDirection } from '@/types/analytics'
-import type { KpiCard, NavItem, SortableKey, SortDirection, TableHeader } from '@/types/dashboard'
+import type { DashboardFilters, TrendDirection } from '@/types/analytics'
+import type { KpiCard, NavItem } from '@/types/dashboard'
 import '@/assets/styles/dashboard-layout.css';
 
 import RecordsTable from '@/components/RecordsTable.vue'
@@ -28,12 +28,6 @@ const {
 } = storeToRefs(analyticsStore)
 
 const { mdAndDown } = useDisplay()
-
-const search = ref('')
-const page = ref(1)
-const itemsPerPage = ref(8)
-const sortKey = ref<SortableKey>('date')
-const sortDirection = ref<SortDirection>('desc')
 const sidebarOpen = ref(true)
 const activeSection = ref('overview')
 
@@ -41,15 +35,6 @@ const navItems: NavItem[] = [
   { id: 'overview', label: 'Overview', icon: 'mdi-view-dashboard-outline' },
   { id: 'trends', label: 'Trends', icon: 'mdi-chart-line' },
   { id: 'records', label: 'Records', icon: 'mdi-table-large' },
-]
-
-const tableHeaders: TableHeader[] = [
-  { title: 'Date', key: 'date' },
-  { title: 'Business Unit', key: 'businessUnit' },
-  { title: 'Region', key: 'region' },
-  { title: 'Revenue', key: 'revenue', align: 'end' },
-  { title: 'Transactions', key: 'transactions', align: 'end' },
-  { title: 'Status', key: 'status' },
 ]
 
 const currencyFormatter = new Intl.NumberFormat('en-GB', {
@@ -245,60 +230,6 @@ const revenueByRegionOptions = computed<ApexOptions>(() => ({
 
 const revenueByRegionSeries = computed(() => revenueByRegion.value.map((point) => point.value))
 
-const searchedRecords = computed(() => {
-  const query = search.value.trim().toLowerCase()
-
-  if (!query) {
-    return filteredRecords.value
-  }
-
-  return filteredRecords.value.filter((record) =>
-    [
-      record.date,
-      record.businessUnit,
-      record.region,
-      record.status,
-      record.revenue.toString(),
-      record.transactions.toString(),
-    ]
-      .join(' ')
-      .toLowerCase()
-      .includes(query),
-  )
-})
-
-const sortedRecords = computed(() => {
-  const direction = sortDirection.value === 'asc' ? 1 : -1
-
-  return [...searchedRecords.value].sort((firstRecord, secondRecord) => {
-    const firstValue = firstRecord[sortKey.value]
-    const secondValue = secondRecord[sortKey.value]
-
-    if (typeof firstValue === 'number' && typeof secondValue === 'number') {
-      return (firstValue - secondValue) * direction
-    }
-
-    return String(firstValue).localeCompare(String(secondValue)) * direction
-  })
-})
-
-const pageCount = computed(() => Math.max(1, Math.ceil(sortedRecords.value.length / itemsPerPage.value)))
-
-const paginatedRecords = computed(() => {
-  const start = (page.value - 1) * itemsPerPage.value
-  return sortedRecords.value.slice(start, start + itemsPerPage.value)
-})
-
-watch([searchedRecords, itemsPerPage], () => {
-  page.value = 1
-})
-
-watch(pageCount, (nextPageCount) => {
-  if (page.value > nextPageCount) {
-    page.value = nextPageCount
-  }
-})
-
 let sectionObserver: IntersectionObserver | null = null
 
 onMounted(() => {
@@ -340,31 +271,6 @@ async function refresh(): Promise<void> {
   await analyticsStore.loadRecords()
 }
 
-function exportCsv(): void {
-  const header = ['Date', 'Business Unit', 'Region', 'Revenue', 'Transactions', 'Status']
-  const rows = sortedRecords.value.map((record) => [
-    record.date,
-    record.businessUnit,
-    record.region,
-    record.revenue,
-    record.transactions,
-    record.status,
-  ])
-
-  const csvContent = [header, ...rows]
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    .join('\n')
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-
-  link.href = url
-  link.download = `operational-records-${new Date().toISOString().slice(0, 10)}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
-}
-
 function setStartDate(value: unknown): void {
   analyticsStore.updateFilters({ startDate: typeof value === 'string' ? value : '' })
 }
@@ -395,34 +301,6 @@ function clearFilterChip(key: keyof DashboardFilters): void {
   } else if (key === 'endDate') {
     setEndDate('')
   }
-}
-
-function setSort(nextSortKey: SortableKey): void {
-  if (sortKey.value === nextSortKey) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    return
-  }
-
-  sortKey.value = nextSortKey
-  sortDirection.value = 'asc'
-}
-
-function sortIcon(headerKey: SortableKey): string {
-  if (sortKey.value !== headerKey) {
-    return 'mdi-swap-vertical'
-  }
-
-  return sortDirection.value === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
-}
-
-function statusColor(status: OperationalRecord['status']): string {
-  const colors: Record<OperationalRecord['status'], string> = {
-    Healthy: 'success',
-    Attention: 'warning',
-    'At Risk': 'error',
-  }
-
-  return colors[status]
 }
 
 function trendIcon(direction: TrendDirection): string {
