@@ -136,10 +136,12 @@ GET /api/records?page=1&pageSize=25
 
 ```jsonc
 {
-  "data": [ /* only the 25 rows for this page */ ],
+  "data": [
+    /* only the 25 rows for this page */
+  ],
   "page": 1,
   "pageSize": 25,
-  "total": 98452
+  "total": 98452,
 }
 ```
 
@@ -186,13 +188,13 @@ it via a download link/notification rather than building it in the browser.
 
 ### Summary
 
-| Concern | Current (mock) | Production (100k) |
-| --- | --- | --- |
-| Data fetch | Whole dataset once | One page per request |
-| Filter / sort / search | In the browser | In the database (query params) |
-| KPIs & charts | Derived from loaded rows | Dedicated aggregation endpoints |
-| Table | Client pagination | `VDataTableServer` + total count |
-| Export | Client-side CSV | Async server-generated export |
+| Concern                | Current (mock)           | Production (100k)                |
+| ---------------------- | ------------------------ | -------------------------------- |
+| Data fetch             | Whole dataset once       | One page per request             |
+| Filter / sort / search | In the browser           | In the database (query params)   |
+| KPIs & charts          | Derived from loaded rows | Dedicated aggregation endpoints  |
+| Table                  | Client pagination        | `VDataTableServer` + total count |
+| Export                 | Client-side CSV          | Async server-generated export    |
 
 ## Getting Started
 
@@ -204,6 +206,15 @@ Install dependencies:
 pnpm install
 ```
 
+Optionally configure a remote API origin:
+
+```sh
+cp .env.example .env.local
+```
+
+Set `VITE_API_BASE_URL` to an origin such as `https://api.example.com`. When it is omitted, the
+dashboard uses the local `/api/operational-records.json` mock endpoint.
+
 Start the dev server with hot-reload:
 
 ```sh
@@ -212,15 +223,15 @@ pnpm dev
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Start the Vite dev server with hot-reload. |
-| `pnpm build` | Type-check and build for production. |
-| `pnpm preview` | Preview the production build locally. |
-| `pnpm test:unit` | Run unit tests with Vitest. |
-| `pnpm type-check` | Type-check the project with `vue-tsc`. |
-| `pnpm lint` | Lint and auto-fix with oxlint and ESLint. |
-| `pnpm format` | Format `src/` with Prettier. |
+| Command           | Description                                |
+| ----------------- | ------------------------------------------ |
+| `pnpm dev`        | Start the Vite dev server with hot-reload. |
+| `pnpm build`      | Type-check and build for production.       |
+| `pnpm preview`    | Preview the production build locally.      |
+| `pnpm test:unit`  | Run unit tests with Vitest.                |
+| `pnpm type-check` | Type-check the project with `vue-tsc`.     |
+| `pnpm lint`       | Lint and auto-fix with oxlint and ESLint.  |
+| `pnpm format`     | Format `src/` with Prettier.               |
 
 ## Recommended IDE Setup
 

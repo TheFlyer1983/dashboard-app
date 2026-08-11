@@ -8,8 +8,7 @@ import { currencyFormatter, numberFormatter } from '@/utils/formatters'
 
 const props = defineProps<{
   records: OperationalRecord[]
-  loading: boolean
-  lastUpdatedAt: Date | null
+  isInitialLoading: boolean
 }>()
 
 const tableHeaders: TableHeader[] = [
@@ -104,7 +103,7 @@ function statusColor(status: OperationalRecord['status']): string {
         </thead>
 
         <tbody>
-          <tr v-if="loading && !lastUpdatedAt">
+          <tr v-if="isInitialLoading">
             <td :colspan="tableHeaders.length">
               <v-progress-linear indeterminate color="primary" />
             </td>

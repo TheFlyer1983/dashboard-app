@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import type { NavItem } from "@/types/dashboard";
+import type { NavItem } from '@/types/dashboard'
 
 defineProps<{
-  temporary: boolean;
-  activeSection: string;
-  navItems: NavItem[];
-}>();
+  temporary: boolean
+  activeSection: string
+  navItems: NavItem[]
+}>()
 
-const sidebarOpen = defineModel<boolean>({ required: true });
+const sidebarOpen = defineModel<boolean>({ required: true })
 
 const emit = defineEmits<{
-  selectSection: [id: string];
-}>();
+  selectSection: [id: string]
+}>()
 </script>
 
 <template>
@@ -24,7 +24,7 @@ const emit = defineEmits<{
   >
     <div class="brand">
       <v-avatar color="white" variant="flat" size="36" class="brand-mark">
-        <v-icon icon="mdi-hexagon-multiple" color="#4f46e5" />
+        <v-icon icon="mdi-hexagon-multiple" color="primary" />
       </v-avatar>
       <div>
         <strong>OpsBoard</strong>

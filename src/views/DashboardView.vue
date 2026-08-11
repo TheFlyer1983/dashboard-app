@@ -23,6 +23,7 @@ const {
   error,
   filteredRecords,
   filters,
+  isInitialLoading,
   lastUpdatedAt,
   loading,
   metrics,
@@ -154,12 +155,12 @@ async function refresh(): Promise<void> {
             @reset="analyticsStore.resetFilters"
           />
 
-          <KpiCardGrid :cards="kpiCards" :loading="loading" :lastUpdatedAt="lastUpdatedAt" />
+          <KpiCardGrid :cards="kpiCards" :is-initial-loading="isInitialLoading" />
         </section>
 
-        <RevenueTrends :loading="loading" :lastUpdatedAt="lastUpdatedAt" />
+        <RevenueTrends :is-initial-loading="isInitialLoading" />
 
-        <RecordsTable :records="filteredRecords" :loading :lastUpdatedAt="lastUpdatedAt" />
+        <RecordsTable :records="filteredRecords" :is-initial-loading="isInitialLoading" />
       </v-container>
     </v-main>
   </v-layout>

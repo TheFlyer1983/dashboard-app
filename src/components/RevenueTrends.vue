@@ -4,15 +4,24 @@ import VueApexCharts from 'vue3-apexcharts'
 import type { ApexOptions } from 'apexcharts'
 import { useAnalyticsStore } from '@/stores/analytics'
 import { storeToRefs } from 'pinia'
+import { useTheme } from 'vuetify'
 import { currencyFormatter } from '@/utils/formatters'
 
 const analyticsStore = useAnalyticsStore()
 const { revenueTrend, revenueByRegion } = storeToRefs(analyticsStore)
+const theme = useTheme()
 
 defineProps<{
-  loading: boolean
-  lastUpdatedAt: Date | null
+  isInitialLoading: boolean
 }>()
+
+const themeColors = computed(() => ({
+  primary: String(theme.current.value.colors.primary),
+  secondary: String(theme.current.value.colors.secondary),
+  info: String(theme.current.value.colors.info),
+  warning: String(theme.current.value.colors.warning),
+  surface: String(theme.current.value.colors.surface),
+}))
 
 const revenueTrendOptions = computed<ApexOptions>(() => ({
   chart: {
@@ -20,7 +29,7 @@ const revenueTrendOptions = computed<ApexOptions>(() => ({
     zoom: { enabled: false },
     fontFamily: 'inherit',
   },
-  colors: ['#4f46e5'],
+  colors: [themeColors.value.primary],
   dataLabels: { enabled: false },
   fill: {
     type: 'gradient',
@@ -74,7 +83,12 @@ const revenueByRegionOptions = computed<ApexOptions>(() => ({
   chart: {
     fontFamily: 'inherit',
   },
-  colors: ['#4f46e5', '#0f766e', '#0284c7', '#d97706'],
+  colors: [
+    themeColors.value.primary,
+    themeColors.value.secondary,
+    themeColors.value.info,
+    themeColors.value.warning,
+  ],
   dataLabels: {
     formatter: (value) => `${Number(value).toFixed(1)}%`,
   },
@@ -84,7 +98,7 @@ const revenueByRegionOptions = computed<ApexOptions>(() => ({
     labels: { colors: '#334155' },
     markers: { size: 8 },
   },
-  stroke: { colors: ['#ffffff'] },
+  stroke: { colors: [themeColors.value.surface] },
   plotOptions: {
     pie: {
       donut: {
@@ -134,7 +148,7 @@ const revenueByRegionSeries = computed(() => revenueByRegion.value.map((point) =
             <v-card-subtitle>Monthly revenue over time</v-card-subtitle>
           </v-card-item>
           <v-card-text>
-            <v-skeleton-loader v-if="loading && !lastUpdatedAt" type="image" height="320" />
+            <v-skeleton-loader v-if="isInitialLoading" type="image" height="320" />
             <VueApexCharts
               v-else
               type="area"
@@ -158,7 +172,7 @@ const revenueByRegionSeries = computed(() => revenueByRegion.value.map((point) =
             <v-card-subtitle>Split across selected regions</v-card-subtitle>
           </v-card-item>
           <v-card-text>
-            <v-skeleton-loader v-if="loading && !lastUpdatedAt" type="image" height="320" />
+            <v-skeleton-loader v-if="isInitialLoading" type="image" height="320" />
             <VueApexCharts
               v-else
               type="donut"

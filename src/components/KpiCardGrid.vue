@@ -1,30 +1,29 @@
 <script setup lang="ts">
-import type { KpiCard } from "@/types/dashboard";
-import type { TrendDirection } from "@/types/analytics";
+import type { KpiCard } from '@/types/dashboard'
+import type { TrendDirection } from '@/types/analytics'
 
 defineProps<{
-  cards: KpiCard[];
-  loading: boolean;
-  lastUpdatedAt: Date | null;
-}>();
+  cards: KpiCard[]
+  isInitialLoading: boolean
+}>()
 
 function trendIcon(direction: TrendDirection): string {
-  if (direction === "up") return "mdi-trending-up";
-  if (direction === "down") return "mdi-trending-down";
-  return "mdi-trending-neutral";
+  if (direction === 'up') return 'mdi-trending-up'
+  if (direction === 'down') return 'mdi-trending-down'
+  return 'mdi-trending-neutral'
 }
 
 function trendColor(direction: TrendDirection): string {
-  if (direction === "up") return "success";
-  if (direction === "down") return "error";
-  return "grey-darken-1";
+  if (direction === 'up') return 'success'
+  if (direction === 'down') return 'error'
+  return 'grey-darken-1'
 }
 </script>
 
 <template>
   <v-row class="mt-5">
     <v-col v-for="card in cards" :key="card.title" cols="12" sm="6" lg="3">
-      <v-card v-if="loading && !lastUpdatedAt" class="kpi-card" elevation="0">
+      <v-card v-if="isInitialLoading" class="kpi-card" elevation="0">
         <v-skeleton-loader type="avatar, article" class="kpi-skeleton" />
       </v-card>
 
@@ -82,27 +81,27 @@ function trendColor(direction: TrendDirection): string {
 }
 
 .kpi-card::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0 auto 0 0;
   width: 4px;
-  background: var(--v-theme-primary, #4f46e5);
+  background: rgb(var(--v-theme-primary));
 }
 
 .kpi-card--primary::before {
-  background: #4f46e5;
+  background: rgb(var(--v-theme-primary));
 }
 
 .kpi-card--secondary::before {
-  background: #0f766e;
+  background: rgb(var(--v-theme-secondary));
 }
 
 .kpi-card--info::before {
-  background: #0284c7;
+  background: rgb(var(--v-theme-info));
 }
 
 .kpi-card--success::before {
-  background: #16a34a;
+  background: rgb(var(--v-theme-success));
 }
 
 .kpi-skeleton {
