@@ -1,19 +1,16 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import type { OperationalRecord } from "@/types/analytics";
-import type { SortableKey, SortDirection, TableHeader} from "@/types/dashboard"
+import { usePagination } from '@/composables/usePagination'
+import { useSortableTable } from '@/composables/useSortableTable'
+import type { OperationalRecord } from '@/types/analytics'
+import type { SortableKey, TableHeader } from '@/types/dashboard'
+import { exportOperationalRecordsCsv } from '@/utils/csv'
+import { currencyFormatter, numberFormatter } from '@/utils/formatters'
 
 const props = defineProps<{
-  records: OperationalRecord[];
-  loading: boolean;
-  lastUpdatedAt: Date | null;
-}>();
-
-const search = ref<string | null>(null);
-const page = ref(1)
-const itemsPerPage = ref(8)
-const sortKey = ref<SortableKey>('date')
-const sortDirection = ref<SortDirection>('desc')
+  records: OperationalRecord[]
+  loading: boolean
+  lastUpdatedAt: Date | null
+}>()
 
 const tableHeaders: TableHeader[] = [
   { title: 'Date', key: 'date' },
@@ -24,75 +21,23 @@ const tableHeaders: TableHeader[] = [
   { title: 'Status', key: 'status' },
 ]
 
-const currencyFormatter = new Intl.NumberFormat('en-GB', {
-  style: 'currency',
-  currency: 'GBP',
-  maximumFractionDigits: 0,
+const {
+  search,
+  setSort,
+  sortIcon,
+  sortedItems: sortedRecords,
+} = useSortableTable<OperationalRecord, SortableKey>(() => props.records, {
+  searchKeys: ['date', 'businessUnit', 'region', 'status', 'revenue', 'transactions'],
+  initialSortKey: 'date',
+  initialSortDirection: 'desc',
 })
 
-const numberFormatter = new Intl.NumberFormat('en-GB')
-
-const searchedRecords = computed(() => {
-  const query = search.value?.trim().toLowerCase()
-
-  if (!query) {
-    return props.records
-  }
-
-  return props.records.filter((record) =>
-    [
-      record.date,
-      record.businessUnit,
-      record.region,
-      record.status,
-      record.revenue.toString(),
-      record.transactions.toString(),
-    ]
-      .join(' ')
-      .toLowerCase()
-      .includes(query),
-  )
-})
-
-const sortedRecords = computed(() => {
-  const direction = sortDirection.value === 'asc' ? 1 : -1
-
-  return [...searchedRecords.value].sort((firstRecord, secondRecord) => {
-    const firstValue = firstRecord[sortKey.value]
-    const secondValue = secondRecord[sortKey.value]
-
-    if (typeof firstValue === 'number' && typeof secondValue === 'number') {
-      return (firstValue - secondValue) * direction
-    }
-
-    return String(firstValue).localeCompare(String(secondValue)) * direction
-  })
-})
-
-const pageCount = computed(() => Math.max(1, Math.ceil(sortedRecords.value.length / itemsPerPage.value)))
-
-const paginatedRecords = computed(() => {
-  const start = (page.value - 1) * itemsPerPage.value
-  return sortedRecords.value.slice(start, start + itemsPerPage.value)
-})
-
-function setSort(nextSortKey: SortableKey): void {
-  if (sortKey.value === nextSortKey) {
-    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
-    return
-  }
-
-  sortKey.value = nextSortKey
-  sortDirection.value = 'asc'
-}
-
-function sortIcon(headerKey: SortableKey): string {
-  if (sortKey.value !== headerKey) {
-    return 'mdi-swap-vertical'
-  }
-
-  return sortDirection.value === 'asc' ? 'mdi-arrow-up' : 'mdi-arrow-down'
-}
+const {
+  itemsPerPage,
+  page,
+  pageCount,
+  paginatedItems: paginatedRecords,
+} = usePagination(sortedRecords)
 
 function statusColor(status: OperationalRecord['status']): string {
   const colors: Record<OperationalRecord['status'], string> = {
@@ -102,31 +47,6 @@ function statusColor(status: OperationalRecord['status']): string {
   }
 
   return colors[status]
-}
-
-function exportCsv(): void {
-  const header = ['Date', 'Business Unit', 'Region', 'Revenue', 'Transactions', 'Status']
-  const rows = sortedRecords.value.map((record) => [
-    record.date,
-    record.businessUnit,
-    record.region,
-    record.revenue,
-    record.transactions,
-    record.status,
-  ])
-
-  const csvContent = [header, ...rows]
-    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-    .join('\n')
-
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-
-  link.href = url
-  link.download = `operational-records-${new Date().toISOString().slice(0, 10)}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
 }
 </script>
 
@@ -160,7 +80,7 @@ function exportCsv(): void {
             variant="outlined"
             color="primary"
             prepend-icon="mdi-download-outline"
-            @click="exportCsv"
+            @click="exportOperationalRecordsCsv(sortedRecords)"
           >
             Export CSV
           </v-btn>
