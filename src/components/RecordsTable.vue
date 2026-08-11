@@ -23,7 +23,9 @@ const tableHeaders: TableHeader[] = [
 const {
   search,
   setSort,
+  sortDirection,
   sortIcon,
+  sortKey,
   sortedItems: sortedRecords,
 } = useSortableTable<OperationalRecord, SortableKey>(() => props.records, {
   searchKeys: ['date', 'businessUnit', 'region', 'status', 'revenue', 'transactions'],
@@ -46,6 +48,14 @@ function statusColor(status: OperationalRecord['status']): string {
   }
 
   return colors[status]
+}
+
+function ariaSort(headerKey: SortableKey): 'ascending' | 'descending' | 'none' {
+  if (sortKey.value !== headerKey) {
+    return 'none'
+  }
+
+  return sortDirection.value === 'asc' ? 'ascending' : 'descending'
 }
 </script>
 
@@ -87,12 +97,17 @@ function statusColor(status: OperationalRecord['status']): string {
       </div>
 
       <v-table class="records-table" density="comfortable">
+        <caption class="visually-hidden">
+          Operational records. Use the column header buttons to change the sort order.
+        </caption>
         <thead>
           <tr>
             <th
               v-for="header in tableHeaders"
               :key="header.key"
               :class="{ 'text-right': header.align === 'end' }"
+              scope="col"
+              :aria-sort="ariaSort(header.key)"
             >
               <button class="sort-button" type="button" @click="setSort(header.key)">
                 <span>{{ header.title }}</span>
@@ -263,7 +278,7 @@ function statusColor(status: OperationalRecord['status']): string {
 
 .empty-state {
   padding: 2.5rem;
-  color: #94a3b8;
+  color: #64748b;
   text-align: center;
 }
 

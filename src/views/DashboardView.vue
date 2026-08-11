@@ -123,6 +123,8 @@ async function refresh(): Promise<void> {
 
 <template>
   <v-layout class="dashboard-layout">
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <AppSidebar
       v-model="sidebarOpen"
       :temporary="mdAndDown"
@@ -138,9 +140,17 @@ async function refresh(): Promise<void> {
       @refresh="refresh"
     />
 
-    <v-main>
+    <v-main id="main-content" tabindex="-1">
       <v-container fluid class="dashboard-content">
-        <v-alert v-if="error" type="error" variant="tonal" class="mb-6" border="start">
+        <v-alert
+          v-if="error"
+          type="error"
+          variant="tonal"
+          class="mb-6"
+          border="start"
+          role="alert"
+          aria-live="assertive"
+        >
           {{ error }}
         </v-alert>
 
@@ -170,6 +180,24 @@ async function refresh(): Promise<void> {
 .dashboard-layout {
   min-height: 100vh;
   background: #f4f6fb;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 3000;
+  top: 0.75rem;
+  left: 0.75rem;
+  padding: 0.65rem 1rem;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: rgb(var(--v-theme-primary));
+  font-weight: 700;
+  transform: translateY(-200%);
+  transition: transform 0.15s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
 }
 
 .dashboard-content {

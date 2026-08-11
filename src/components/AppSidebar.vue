@@ -136,7 +136,7 @@ const emit = defineEmits<{
 }
 
 .sidebar-footer-row.muted {
-  color: #818cf8;
+  color: #a5b4fc;
   font-weight: 500;
   margin-top: 0.2rem;
 }

@@ -149,13 +149,32 @@ const revenueByRegionSeries = computed(() => revenueByRegion.value.map((point) =
           </v-card-item>
           <v-card-text>
             <v-skeleton-loader v-if="isInitialLoading" type="image" height="320" />
-            <VueApexCharts
-              v-else
-              type="area"
-              height="320"
-              :options="revenueTrendOptions"
-              :series="revenueTrendSeries"
-            />
+            <div v-else aria-hidden="true">
+              <VueApexCharts
+                type="area"
+                height="320"
+                :options="revenueTrendOptions"
+                :series="revenueTrendSeries"
+              />
+            </div>
+
+            <table class="visually-hidden">
+              <caption>
+                Monthly revenue trend
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Month</th>
+                  <th scope="col">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="point in revenueTrend" :key="point.label">
+                  <td>{{ point.label }}</td>
+                  <td>{{ currencyFormatter.format(point.value) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </v-card-text>
         </v-card>
       </v-col>
@@ -173,13 +192,32 @@ const revenueByRegionSeries = computed(() => revenueByRegion.value.map((point) =
           </v-card-item>
           <v-card-text>
             <v-skeleton-loader v-if="isInitialLoading" type="image" height="320" />
-            <VueApexCharts
-              v-else
-              type="donut"
-              height="320"
-              :options="revenueByRegionOptions"
-              :series="revenueByRegionSeries"
-            />
+            <div v-else aria-hidden="true">
+              <VueApexCharts
+                type="donut"
+                height="320"
+                :options="revenueByRegionOptions"
+                :series="revenueByRegionSeries"
+              />
+            </div>
+
+            <table class="visually-hidden">
+              <caption>
+                Revenue by region
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Region</th>
+                  <th scope="col">Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="point in revenueByRegion" :key="point.label">
+                  <td>{{ point.label }}</td>
+                  <td>{{ currencyFormatter.format(point.value) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </v-card-text>
         </v-card>
       </v-col>

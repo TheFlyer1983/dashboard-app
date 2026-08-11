@@ -8,7 +8,7 @@ The branch refactors the original single-file dashboard into focused Vue compone
 composables, and utility modules. It also improves loading-state management, API request safety,
 theme consistency, accessibility, environment configuration, formatting, and test coverage.
 
-The main `DashboardView.vue` file has been reduced from more than 1,200 lines to approximately 180
+The main `DashboardView.vue` file has been reduced from more than 1,200 lines to approximately 200
 lines and now primarily coordinates page-level state and child components.
 
 ## Component Architecture
@@ -87,9 +87,20 @@ The configured primary colour remains `#2451b2` in `src/plugins/vuetify.ts`.
 
 The extracted shell components include several accessibility improvements:
 
+- The document language is declared with `<html lang="en">` for assistive technology.
 - Icon-only navigation and refresh buttons have accessible labels.
 - Last-updated information is exposed as a polite live status.
 - The active sidebar destination uses `aria-current="location"`.
+- The records table has a screen-reader caption, scoped column headers, and `aria-sort` values that
+  track the current sort direction.
+- Presentational ApexCharts output is hidden from assistive technology and equivalent visually
+  hidden data tables expose monthly and regional revenue.
+- A shared `.visually-hidden` utility keeps alternative content available to assistive technology
+  without displaying it visually.
+- A keyboard-visible skip link moves focus directly to a focusable main-content target.
+- Dynamic errors are announced using `role="alert"` and `aria-live="assertive"`.
+- Low-contrast muted colours were replaced with WCAG AA alternatives: `#818cf8` became `#a5b4fc`,
+  and `#94a3b8` became `#64748b`.
 
 ## Formatting Configuration
 

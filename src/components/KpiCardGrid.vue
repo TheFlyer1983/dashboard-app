@@ -140,7 +140,7 @@ function trendColor(direction: TrendDirection): string {
 }
 
 .kpi-meta span {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.78rem;
 }
 </style>
