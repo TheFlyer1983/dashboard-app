@@ -148,8 +148,8 @@ const revenueByRegionSeries = computed(() => revenueByRegion.value.map((point) =
             <v-card-subtitle>Monthly revenue over time</v-card-subtitle>
           </v-card-item>
           <v-card-text>
-            <v-skeleton-loader v-if="isInitialLoading" type="image" height="320" />
-            <div v-else aria-hidden="true">
+            <v-skeleton-loader v-show="isInitialLoading" type="image" height="320" />
+            <div v-show="!isInitialLoading" aria-hidden="true">
               <VueApexCharts
                 type="area"
                 height="320"
@@ -191,8 +191,8 @@ const revenueByRegionSeries = computed(() => revenueByRegion.value.map((point) =
             <v-card-subtitle>Split across selected regions</v-card-subtitle>
           </v-card-item>
           <v-card-text>
-            <v-skeleton-loader v-if="isInitialLoading" type="image" height="320" />
-            <div v-else aria-hidden="true">
+            <v-skeleton-loader v-show="isInitialLoading" type="image" height="320" />
+            <div v-show="!isInitialLoading" aria-hidden="true">
               <VueApexCharts
                 type="donut"
                 height="320"

@@ -30,6 +30,13 @@ into these components:
 Styles specific to each feature were moved into the corresponding component. Shared dashboard
 layout and card styles live in `src/assets/styles/dashboard-layout.css`.
 
+Chart skeletons now use `v-show` so the ApexCharts elements remain mounted while loading state
+changes. Previously, `v-if` removed and recreated the chart elements; if an asynchronous ApexCharts
+render continued after Vue removed its target element, the library rejected with
+`Error: Element not found`. `v-show` changes visibility without destroying the chart element,
+reducing that lifecycle race. ApexCharts was also upgraded from `6.5.0` to `6.8.0` to include the
+latest rendering and lifecycle fixes.
+
 ## Reusable Composables and Utilities
 
 The records-table data logic has been extracted from the component:
