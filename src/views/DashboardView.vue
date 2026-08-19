@@ -27,6 +27,8 @@ const {
   lastUpdatedAt,
   loading,
   metrics,
+  revenueByRegion,
+  revenueTrend,
   trends,
 } = storeToRefs(analyticsStore)
 
@@ -168,7 +170,11 @@ async function refresh(): Promise<void> {
           <KpiCardGrid :cards="kpiCards" :is-initial-loading="isInitialLoading" />
         </section>
 
-        <RevenueTrends :is-initial-loading="isInitialLoading" />
+        <RevenueTrends
+          :is-initial-loading="isInitialLoading"
+          :revenue-trend="revenueTrend"
+          :revenue-by-region="revenueByRegion"
+        />
 
         <RecordsTable :records="filteredRecords" :is-initial-loading="isInitialLoading" />
       </v-container>
@@ -203,5 +209,11 @@ async function refresh(): Promise<void> {
 .dashboard-content {
   padding: 1.75rem 2rem 3rem;
   max-width: 1440px;
+}
+
+@media (max-width: 960px) {
+  .dashboard-content {
+    padding: 1.25rem 1rem 2.5rem;
+  }
 }
 </style>

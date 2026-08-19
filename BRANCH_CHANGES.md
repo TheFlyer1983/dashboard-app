@@ -23,12 +23,15 @@ into these components:
 - `FilterToolbar.vue` contains date, region, and status controls, active-filter chips, and reset
   behaviour.
 - `KpiCardGrid.vue` renders KPI cards, trends, and initial-loading skeletons.
-- `RevenueTrends.vue` contains the revenue trend and regional revenue charts.
+- `RevenueTrends.vue` contains the revenue trend and regional revenue charts and receives chart data
+  through typed props rather than accessing Pinia directly.
 - `RecordsTable.vue` contains record searching, sorting, pagination, status presentation, and CSV
   export controls.
 
 Styles specific to each feature were moved into the corresponding component. Shared dashboard
-layout and card styles live in `src/assets/styles/dashboard-layout.css`.
+layout and card styles live in `src/assets/styles/dashboard-layout.css`; duplicate card rules were
+removed, and responsive page padding now lives with `DashboardView.vue` rather than in an
+ineffective child-scoped rule.
 
 Chart skeletons now use `v-show` so the ApexCharts elements remain mounted while loading state
 changes. Previously, `v-if` removed and recreated the chart elements; if an asynchronous ApexCharts
@@ -114,6 +117,12 @@ The extracted shell components include several accessibility improvements:
 The invalid mixed Oxfmt/Prettier configuration was replaced with a valid `.prettierrc`.
 The duplicate `.prettierrc.json` file was removed, and `.prettierignore` now excludes generated
 output, dependencies, coverage output, and the lockfile.
+
+## Documentation
+
+The README project structure and architectural overview now reflect the extracted components,
+composables, utilities, tests, prop-based component data flow, configurable API origin, and request
+cancellation behaviour.
 
 ## Tests
 

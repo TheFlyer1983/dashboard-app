@@ -2,17 +2,16 @@
 import { computed } from 'vue'
 import VueApexCharts from 'vue3-apexcharts'
 import type { ApexOptions } from 'apexcharts'
-import { useAnalyticsStore } from '@/stores/analytics'
-import { storeToRefs } from 'pinia'
 import { useTheme } from 'vuetify'
+import type { ChartPoint } from '@/types/analytics'
 import { currencyFormatter } from '@/utils/formatters'
 
-const analyticsStore = useAnalyticsStore()
-const { revenueTrend, revenueByRegion } = storeToRefs(analyticsStore)
 const theme = useTheme()
 
-defineProps<{
+const props = defineProps<{
   isInitialLoading: boolean
+  revenueTrend: ChartPoint[]
+  revenueByRegion: ChartPoint[]
 }>()
 
 const themeColors = computed(() => ({
@@ -54,7 +53,7 @@ const revenueTrendOptions = computed<ApexOptions>(() => ({
     hover: { size: 5 },
   },
   xaxis: {
-    categories: revenueTrend.value.map((point) => point.label),
+    categories: props.revenueTrend.map((point) => point.label),
     axisBorder: { show: false },
     axisTicks: { show: false },
     labels: { style: { colors: '#64748b' } },
@@ -75,7 +74,7 @@ const revenueTrendOptions = computed<ApexOptions>(() => ({
 const revenueTrendSeries = computed(() => [
   {
     name: 'Revenue',
-    data: revenueTrend.value.map((point) => point.value),
+    data: props.revenueTrend.map((point) => point.value),
   },
 ])
 
@@ -92,7 +91,7 @@ const revenueByRegionOptions = computed<ApexOptions>(() => ({
   dataLabels: {
     formatter: (value) => `${Number(value).toFixed(1)}%`,
   },
-  labels: revenueByRegion.value.map((point) => point.label),
+  labels: props.revenueByRegion.map((point) => point.label),
   legend: {
     position: 'bottom',
     labels: { colors: '#334155' },
@@ -127,10 +126,10 @@ const revenueByRegionOptions = computed<ApexOptions>(() => ({
 }))
 
 const revenueTotal = computed(() =>
-  revenueByRegion.value.reduce((total, point) => total + point.value, 0),
+  props.revenueByRegion.reduce((total, point) => total + point.value, 0),
 )
 
-const revenueByRegionSeries = computed(() => revenueByRegion.value.map((point) => point.value))
+const revenueByRegionSeries = computed(() => props.revenueByRegion.map((point) => point.value))
 </script>
 
 <template>

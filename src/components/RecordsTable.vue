@@ -182,15 +182,6 @@ function ariaSort(headerKey: SortableKey): 'ascending' | 'descending' | 'none' {
 </template>
 
 <style scoped>
-.records-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-  padding: 1.25rem 1.25rem 0.75rem;
-}
-
 .dashboard-card :deep(.v-card-item) {
   padding-bottom: 0.25rem;
 }
@@ -308,10 +299,6 @@ function ariaSort(headerKey: SortableKey): 'ascending' | 'descending' | 'none' {
 }
 
 @media (max-width: 960px) {
-  .dashboard-content {
-    padding: 1.25rem 1rem 2.5rem;
-  }
-
   .records-toolbar,
   .pagination-bar {
     flex-direction: column;
