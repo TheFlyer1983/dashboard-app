@@ -22,28 +22,52 @@ A standalone single-page application (SPA) for monitoring key operational metric
 
 ## Architecture
 
-State is centralised in a single Pinia store (`src/stores/analytics.ts`). The store owns the filters and derives all displayed data — KPI metrics, monthly trends, and chart series — from one filtered source of truth, so any filter change cascades to the cards, charts, and table together.
+State is centralised in a Pinia store (`src/stores/analytics.ts`). The store owns the filters and
+derives all displayed data — KPI metrics, monthly trends, and chart series — from one filtered
+source of truth, so any filter change cascades to the cards, charts, and table together.
+`DashboardView.vue` acts as the composition root: it reads store state and passes data into focused,
+presentational components through typed props.
 
 ### API layer
 
-The mock REST layer is a static JSON file served from `public/api/operational-records.json` and fetched over HTTP in `src/api/analytics.ts` — the same way a real client would call a REST endpoint.
+The mock REST layer is a static JSON file served from `public/api/operational-records.json` and
+fetched over HTTP in `src/api/analytics.ts` — the same way a real client would call a REST endpoint.
+The API origin can be configured with `VITE_API_BASE_URL`, and superseded requests are cancelled to
+prevent stale responses from replacing newer data.
 
 ### Project structure
 
 ```text
 src/
-├── api/            # Mock REST data access (fetch)
+├── __tests__/          # Unit tests for the app, store, API, utilities, and composables
+├── api/                # Analytics data access and endpoint configuration
 │   └── analytics.ts
-├── plugins/        # Vuetify setup (theme, components, directives)
+├── assets/
+│   └── styles/
+│       └── dashboard-layout.css
+├── components/         # Focused dashboard presentation components
+│   ├── AppSidebar.vue
+│   ├── AppTopBar.vue
+│   ├── FilterToolbar.vue
+│   ├── KpiCardGrid.vue
+│   ├── RecordsTable.vue
+│   └── RevenueTrends.vue
+├── composables/        # Reusable table sorting and pagination state
+│   ├── usePagination.ts
+│   └── useSortableTable.ts
+├── plugins/            # Vuetify setup (theme, components, directives)
 │   └── vuetify.ts
-├── router/         # Vue Router configuration
+├── router/             # Vue Router configuration
 │   └── index.ts
-├── stores/         # Pinia store (filters + derived analytics)
+├── stores/             # Pinia store (filters + derived analytics)
 │   └── analytics.ts
-├── types/          # Shared TypeScript types
+├── types/              # Shared domain and presentation types
 │   ├── analytics.ts   # Data-model types
 │   └── dashboard.ts   # Dashboard/UI presentation types
-├── views/          # Route views
+├── utils/              # CSV export and shared formatters
+│   ├── csv.ts
+│   └── formatters.ts
+├── views/              # Route-level composition
 │   └── DashboardView.vue
 ├── App.vue
 └── main.ts
@@ -105,8 +129,9 @@ options are `computed`, so they react to filtered data and theme colours without
 
 ### Composition API + `<script setup>` + TypeScript
 
-Chosen for strong type inference, minimal boilerplate, and colocated logic — which keeps the single
-view component readable despite its feature set.
+Chosen for strong type inference, minimal boilerplate, and colocated logic. The route view
+coordinates data flow while feature components, composables, and utilities keep concerns isolated
+and independently testable.
 
 ### Client-side filtering/sorting/pagination (for now)
 
@@ -136,10 +161,12 @@ GET /api/records?page=1&pageSize=25
 
 ```jsonc
 {
-  "data": [ /* only the 25 rows for this page */ ],
+  "data": [
+    /* only the 25 rows for this page */
+  ],
   "page": 1,
   "pageSize": 25,
-  "total": 98452
+  "total": 98452,
 }
 ```
 
@@ -186,13 +213,13 @@ it via a download link/notification rather than building it in the browser.
 
 ### Summary
 
-| Concern | Current (mock) | Production (100k) |
-| --- | --- | --- |
-| Data fetch | Whole dataset once | One page per request |
-| Filter / sort / search | In the browser | In the database (query params) |
-| KPIs & charts | Derived from loaded rows | Dedicated aggregation endpoints |
-| Table | Client pagination | `VDataTableServer` + total count |
-| Export | Client-side CSV | Async server-generated export |
+| Concern                | Current (mock)           | Production (100k)                |
+| ---------------------- | ------------------------ | -------------------------------- |
+| Data fetch             | Whole dataset once       | One page per request             |
+| Filter / sort / search | In the browser           | In the database (query params)   |
+| KPIs & charts          | Derived from loaded rows | Dedicated aggregation endpoints  |
+| Table                  | Client pagination        | `VDataTableServer` + total count |
+| Export                 | Client-side CSV          | Async server-generated export    |
 
 ## Getting Started
 
@@ -204,6 +231,15 @@ Install dependencies:
 pnpm install
 ```
 
+Optionally configure a remote API origin:
+
+```sh
+cp .env.example .env.local
+```
+
+Set `VITE_API_BASE_URL` to an origin such as `https://api.example.com`. When it is omitted, the
+dashboard uses the local `/api/operational-records.json` mock endpoint.
+
 Start the dev server with hot-reload:
 
 ```sh
@@ -212,15 +248,15 @@ pnpm dev
 
 ## Scripts
 
-| Command | Description |
-| --- | --- |
-| `pnpm dev` | Start the Vite dev server with hot-reload. |
-| `pnpm build` | Type-check and build for production. |
-| `pnpm preview` | Preview the production build locally. |
-| `pnpm test:unit` | Run unit tests with Vitest. |
-| `pnpm type-check` | Type-check the project with `vue-tsc`. |
-| `pnpm lint` | Lint and auto-fix with oxlint and ESLint. |
-| `pnpm format` | Format `src/` with Prettier. |
+| Command           | Description                                |
+| ----------------- | ------------------------------------------ |
+| `pnpm dev`        | Start the Vite dev server with hot-reload. |
+| `pnpm build`      | Type-check and build for production.       |
+| `pnpm preview`    | Preview the production build locally.      |
+| `pnpm test:unit`  | Run unit tests with Vitest.                |
+| `pnpm type-check` | Type-check the project with `vue-tsc`.     |
+| `pnpm lint`       | Lint and auto-fix with oxlint and ESLint.  |
+| `pnpm format`     | Format `src/` with Prettier.               |
 
 ## Recommended IDE Setup
 

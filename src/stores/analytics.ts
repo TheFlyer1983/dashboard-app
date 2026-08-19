@@ -1,4 +1,4 @@
-import { computed, ref } from 'vue'
+import { computed, onScopeDispose, ref } from 'vue'
 import { defineStore } from 'pinia'
 
 import { fetchOperationalRecords } from '@/api/analytics'
@@ -52,6 +52,9 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   const error = ref<string | null>(null)
   const lastUpdatedAt = ref<Date | null>(null)
 
+  const isInitialLoading = computed(() => loading.value && lastUpdatedAt.value === null)
+  let recordsRequestController: AbortController | null = null
+
   const availableRegions = computed(() =>
     Array.from(new Set(records.value.map((record) => record.region))).sort(),
   )
@@ -64,7 +67,8 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     records.value.filter((record) => {
       const isAfterStart = !filters.value.startDate || record.date >= filters.value.startDate
       const isBeforeEnd = !filters.value.endDate || record.date <= filters.value.endDate
-      const matchesRegion = filters.value.region === allRegions || record.region === filters.value.region
+      const matchesRegion =
+        filters.value.region === allRegions || record.region === filters.value.region
       const matchesStatus =
         filters.value.status === allStatuses || record.status === filters.value.status
 
@@ -132,8 +136,8 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   )
 
   const trends = computed<MetricTrends | null>(() => {
-    const current = monthlyMetrics.value.at(-1)
-    const previous = monthlyMetrics.value.at(-2)
+    const current = monthlyMetrics.value[monthlyMetrics.value.length - 1]
+    const previous = monthlyMetrics.value[monthlyMetrics.value.length - 2]
 
     if (!current || !previous) {
       return null
@@ -163,16 +167,33 @@ export const useAnalyticsStore = defineStore('analytics', () => {
   })
 
   async function loadRecords(): Promise<void> {
+    recordsRequestController?.abort()
+
+    const requestController = new AbortController()
+    recordsRequestController = requestController
     loading.value = true
     error.value = null
 
     try {
-      records.value = await fetchOperationalRecords()
+      const nextRecords = await fetchOperationalRecords(requestController.signal)
+
+      if (recordsRequestController !== requestController) {
+        return
+      }
+
+      records.value = nextRecords
       lastUpdatedAt.value = new Date()
     } catch (caughtError) {
+      if (recordsRequestController !== requestController) {
+        return
+      }
+
       error.value = caughtError instanceof Error ? caughtError.message : 'Unable to load records'
     } finally {
-      loading.value = false
+      if (recordsRequestController === requestController) {
+        recordsRequestController = null
+        loading.value = false
+      }
     }
   }
 
@@ -187,6 +208,10 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     filters.value = { ...defaultFilters }
   }
 
+  onScopeDispose(() => {
+    recordsRequestController?.abort()
+  })
+
   return {
     allRegions,
     allStatuses,
@@ -195,6 +220,7 @@ export const useAnalyticsStore = defineStore('analytics', () => {
     loading,
     error,
     lastUpdatedAt,
+    isInitialLoading,
     availableRegions,
     availableStatuses,
     filteredRecords,
